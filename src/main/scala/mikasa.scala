@@ -57,11 +57,11 @@ object mikasa {
 
     // https://spark.apache.org/docs/latest/quick-start.html
     val conf = new SparkConf().setAppName("Mikasa Online Layer")
-    conf.setMaster("local")
-    val sc = new SparkContext(conf)
+    conf.setMaster("local[*]")
+    //val sc = new SparkContext(conf)
 
     // Spark Streaming本体（Spark Streaming Context）の定義
-    val ssc = new StreamingContext(sc, Seconds(60)) // スライド幅60秒
+    val ssc = new StreamingContext(conf, Seconds(60)) // スライド幅60秒
 
     // 設定ファイルより検索ワードを設定
     val searchWordList = appProperties.getProperty("twitter.searchKeyword").split(",")
@@ -74,8 +74,9 @@ object mikasa {
     // Twitterから取得したツイートを処理する
     val tweetStream = stream.flatMap(status => {
 
-      //println("----")
-      //println(status.getText())
+      println("----")
+      println(status.getText())
+
       val tokenizer : Tokenizer = Tokenizer.builder().build()  // kuromojiの分析器
       val features : scala.collection.mutable.ArrayBuffer[String] = new collection.mutable.ArrayBuffer[String]() //解析結果を保持するための入れ物
       var tweetText : String = status.getText() //ツイート本文の取得
@@ -103,7 +104,7 @@ object mikasa {
 
     // ウインドウ集計（行末の括弧の位置はコメントを入れるためです、気にしないで下さい。）
     val topCounts60 = tweetStream.map((_, 1)                      // 出現回数をカウントするために各単語に「1」を付与
-    ).reduceByKeyAndWindow(_+_, Seconds(60*60)   // ウインドウ幅(60*60sec)に含まれる単語を集める
+    ).reduceByKeyAndWindow(_+_, Seconds(3*60)   // ウインドウ幅(60*60sec)に含まれる単語を集める
       ).map{case (topic, count) => (count, topic)  // 単語の出現回数を集計
     }.transform(_.sortByKey(false))               // ソート
 
