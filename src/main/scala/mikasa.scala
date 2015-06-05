@@ -52,11 +52,11 @@ object mikasa {
     System.setProperty("twitter4j.oauth.consumerKey", appProperties.getProperty("twitter.consumer_key"))
     System.setProperty("twitter4j.oauth.consumerSecret", appProperties.getProperty("twitter.consumer_secret"))
     System.setProperty("twitter4j.oauth.accessToken", appProperties.getProperty("twitter.access_token"))
-    System.setProperty("twitter4j.oauth.accessTokenSecret", appProperties.getProperty("access_token_secret"))
+    System.setProperty("twitter4j.oauth.accessTokenSecret", appProperties.getProperty("twitter.access_token_secret"))
 
 
     // https://spark.apache.org/docs/latest/quick-start.html
-    val conf = new SparkConf().setAppName("TwitterFollowerScoreRanking2")
+    val conf = new SparkConf().setAppName("Mikasa Online Layer")
     conf.setMaster("local")
     val sc = new SparkContext(conf)
 
@@ -67,12 +67,15 @@ object mikasa {
     val searchWordList = appProperties.getProperty("twitter.searchKeyword").split(",")
 
     // debug
-    println(searchWordList)
+    // println(searchWordList(0))
 
     val stream = TwitterUtils.createStream(ssc, None, searchWordList)
 
     // Twitterから取得したツイートを処理する
     val tweetStream = stream.flatMap(status => {
+
+      //println("----")
+      //println(status.getText())
       val tokenizer : Tokenizer = Tokenizer.builder().build()  // kuromojiの分析器
       val features : scala.collection.mutable.ArrayBuffer[String] = new collection.mutable.ArrayBuffer[String]() //解析結果を保持するための入れ物
       var tweetText : String = status.getText() //ツイート本文の取得
