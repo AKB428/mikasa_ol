@@ -1,3 +1,5 @@
+kuromoji.dict_path=./dictionary/anime_2015_2Q.txt
+
 twitter.consumer_key=
 twitter.consumer_secret=
 twitter.access_token=

@@ -11,7 +11,8 @@ import org.atilika.kuromoji.{Token, Tokenizer}
 /**
  * Created by AKB428 on 2015/06/05.
  *
- * reg:http://www.intellilink.co.jp/article/column/bigdata-kk01.html
+ * ref:https://github.com/AKB428/inazuma/blob/master/src/main/scala/inazumaTwitter.scala
+ * ref:http://www.intellilink.co.jp/article/column/bigdata-kk01.html
  */
 object mikasa {
 
@@ -23,6 +24,7 @@ object mikasa {
 
 
     val TOPIC = "ikazuchi0"
+
 
     //--- Kafka Client Init Start
     val props = new Properties();
@@ -47,6 +49,8 @@ object mikasa {
     val inStream = new FileInputStream(configFileName)
     val appProperties = new Properties()
     appProperties.load(new InputStreamReader(inStream, "UTF-8"))
+
+    val dictFilePath = appProperties.getProperty("kuromoji.dict_path")
 
     // TODO @AKB428 サンプルコードがなぜかシステム設定になってるのでプロセス固有に設定できるように直せたら直す
     System.setProperty("twitter4j.oauth.consumerKey", appProperties.getProperty("twitter.consumer_key"))
@@ -74,10 +78,7 @@ object mikasa {
     // Twitterから取得したツイートを処理する
     val tweetStream = stream.flatMap(status => {
 
-      println("----")
-      println(status.getText())
-
-      val tokenizer : Tokenizer = Tokenizer.builder().build()  // kuromojiの分析器
+//      val tokenizer : Tokenizer = CustomTwitterTokenizer.builder().build()  // kuromojiの分析器
       val features : scala.collection.mutable.ArrayBuffer[String] = new collection.mutable.ArrayBuffer[String]() //解析結果を保持するための入れ物
       var tweetText : String = status.getText() //ツイート本文の取得
 
@@ -87,34 +88,46 @@ object mikasa {
         tweetText = tweetText.replaceAll("http(s*)://(.*)/", "").replaceAll("¥¥uff57", "") // 全角の「ｗ」は邪魔www
 
         // ツイート本文の解析
-        val tokens : java.util.List[Token] = tokenizer.tokenize(tweetText) // 形態素解析
+        val tokens : java.util.List[Token] = CustomTwitterTokenizer.tokenize(tweetText, dictFilePath)
         val pattern : Pattern = Pattern.compile("^[a-zA-Z]+$|^[0-9]+$") //「英数字か？」の正規表現
         for(index <- 0 to tokens.size()-1) { //各形態素に対して。。。
         val token = tokens.get(index)
           val matcher : Matcher = pattern.matcher(token.getSurfaceForm())
           // 文字数が3文字以上で、かつ、英数字のみではない単語を検索
           if(token.getSurfaceForm().length() >= 3 && !matcher.find()) {
-            // 条件に一致した形態素解析の結果を登録
-            features += (token.getSurfaceForm() + "-" + token.getAllFeatures())
+            if (tokens.get(index).getPartOfSpeech == "カスタム名詞") {
+              features += tokens.get(index).getSurfaceForm
+            }
           }
         }
       }
       (features)
     })
 
+    // ソート方法を定義（必ずソートする前に定義）
+    implicit val sortIntegersByString = new Ordering[Int] {
+      override def compare(a: Int, b: Int) = a.compare(b)*(-1)
+    }
+
+
     // ウインドウ集計（行末の括弧の位置はコメントを入れるためです、気にしないで下さい。）
     val topCounts60 = tweetStream.map((_, 1)                      // 出現回数をカウントするために各単語に「1」を付与
     ).reduceByKeyAndWindow(_+_, Seconds(3*60)   // ウインドウ幅(60*60sec)に含まれる単語を集める
       ).map{case (topic, count) => (count, topic)  // 単語の出現回数を集計
-    }.transform(_.sortByKey(false))               // ソート
+    }.transform(_.sortByKey(true))               // ソート
 
 
     // TODO スコアリングはタイトルで1つに集計しなおす必要がある
     // TODO 俺ガイル, oregaisu => 正式タイトルに直して集計
 
+
     // 出力
     topCounts60.foreachRDD(rdd => {
       // 出現回数上位20単語を取得
+
+      // ソート
+     // val rddSort = rdd.map(x => (x,1)).reduceByKey((x,y) => x + y).sortBy(_._2)
+
       val topList = rdd.take(20)
       // コマンドラインに出力
       println("¥ nPopular topics in last 60*60 seconds (%s words):".format(rdd.count()))
@@ -122,7 +135,7 @@ object mikasa {
         println("%s (%s tweets)".format(tag, count))
         // Send Msg to Kafka
         // TOPスコア順にワードを送信
-        val data = new KeyedMessage[String, String](TOPIC, tag)
+        val data = new KeyedMessage[String, String](TOPIC,  "%s:%s".format(tag, count))
         producer.send(data)
       }
     })
@@ -134,5 +147,13 @@ object mikasa {
 
   }
 
+}
 
+object CustomTwitterTokenizer {
+
+  def tokenize(text: String, dictPath: String): java.util.List[Token]  = {
+    Tokenizer.builder().mode(Tokenizer.Mode.SEARCH)
+      .userDictionary(dictPath)
+      .build().tokenize(text)
+  }
 }
