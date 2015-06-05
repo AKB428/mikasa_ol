@@ -128,17 +128,21 @@ object mikasa {
       // ソート
      // val rddSort = rdd.map(x => (x,1)).reduceByKey((x,y) => x + y).sortBy(_._2)
 
+      val sendMsg = new StringBuilder()
+
       val topList = rdd.take(20)
       // コマンドラインに出力
       println("¥ nPopular topics in last 60*60 seconds (%s words):".format(rdd.count()))
       topList.foreach { case (count, tag) =>
         println("%s (%s tweets)".format(tag, count))
-        // Send Msg to Kafka
-        // TOPスコア順にワードを送信
-        val data = new KeyedMessage[String, String](TOPIC,  "%s:%s".format(tag, count))
-        producer.send(data)
+        sendMsg.append("%s:%s,".format(tag, count))
       }
+      // Send Msg to Kafka
+      // TOPスコア順にワードを送信
+      val data = new KeyedMessage[String, String](TOPIC, sendMsg.toString())
+      producer.send(data)
     })
+
 
     // 定義した処理を実行するSpark Streamingを起動！
     ssc.start()
