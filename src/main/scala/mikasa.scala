@@ -25,6 +25,8 @@ object mikasa {
 
     val TOPIC = "ikazuchi0"
 
+    val TOPIC_VIEW = "ikazuchi0.view"
+
 
     //--- Kafka Client Init Start
     val props = new Properties();
@@ -112,7 +114,7 @@ object mikasa {
 
     // ウインドウ集計（行末の括弧の位置はコメントを入れるためです、気にしないで下さい。）
     val topCounts60 = tweetStream.map((_, 1)                      // 出現回数をカウントするために各単語に「1」を付与
-    ).reduceByKeyAndWindow(_+_, Seconds(3*60)   // ウインドウ幅(60*60sec)に含まれる単語を集める
+    ).reduceByKeyAndWindow(_+_, Seconds(60*60)   // ウインドウ幅(60*60sec)に含まれる単語を集める
       ).map{case (topic, count) => (count, topic)  // 単語の出現回数を集計
     }.transform(_.sortByKey(true))               // ソート
 
@@ -130,7 +132,7 @@ object mikasa {
 
       val sendMsg = new StringBuilder()
 
-      val topList = rdd.take(20)
+      val topList = rdd.take(10)
       // コマンドラインに出力
       println("¥ nPopular topics in last 60*60 seconds (%s words):".format(rdd.count()))
       topList.foreach { case (count, tag) =>
@@ -143,6 +145,39 @@ object mikasa {
       producer.send(data)
     })
 
+
+    // ウインドウ集計（行末の括弧の位置はコメントを入れるためです、気にしないで下さい。）
+    val topCounts3 = tweetStream.map((_, 1)                      // 出現回数をカウントするために各単語に「1」を付与
+    ).reduceByKeyAndWindow(_+_, Seconds(60*60)   // ウインドウ幅(60*60sec)に含まれる単語を集める
+      ).map{case (topic, count) => (count, topic)  // 単語の出現回数を集計
+    }.transform(_.sortByKey(true))               // ソート
+
+
+    // TODO スコアリングはタイトルで1つに集計しなおす必要がある
+    // TODO 俺ガイル, oregaisu => 正式タイトルに直して集計
+
+
+    // 出力
+    topCounts3.foreachRDD(rdd => {
+      // 出現回数上位20単語を取得
+
+      // ソート
+      // val rddSort = rdd.map(x => (x,1)).reduceByKey((x,y) => x + y).sortBy(_._2)
+
+      val sendMsg = new StringBuilder()
+
+      val topList = rdd.take(10)
+      // コマンドラインに出力
+      println("¥ nPopular topics in last 60*60 seconds (%s words):".format(rdd.count()))
+      topList.foreach { case (count, tag) =>
+        println("%s (%s tweets)".format(tag, count))
+        sendMsg.append("%s:%s,".format(tag, count))
+      }
+      // Send Msg to Kafka
+      // TOPスコア順にワードを送信
+      val data = new KeyedMessage[String, String](TOPIC_VIEW, sendMsg.toString())
+      producer.send(data)
+    })
 
     // 定義した処理を実行するSpark Streamingを起動！
     ssc.start()
