@@ -94,9 +94,11 @@ object mikasa {
         val pattern : Pattern = Pattern.compile("^[a-zA-Z]+$|^[0-9]+$") //「英数字か？」の正規表現
         for(index <- 0 to tokens.size()-1) { //各形態素に対して。。。
         val token = tokens.get(index)
-          val matcher : Matcher = pattern.matcher(token.getSurfaceForm())
-          // 文字数が3文字以上で、かつ、英数字のみではない単語を検索
-          if(token.getSurfaceForm().length() >= 3 && !matcher.find()) {
+
+          // 英単語文字を排除したい場合はこれを使うが、英語タイトルアニメ[Fate/SHOW BAY ROCK]が引っかからなくなるのでコメントアウト
+          // val matcher : Matcher = pattern.matcher(token.getSurfaceForm())
+
+          if(token.getSurfaceForm().length() >= 3) {
             if (tokens.get(index).getPartOfSpeech == "カスタム名詞") {
               features += tokens.get(index).getSurfaceForm
             }
