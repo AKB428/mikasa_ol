@@ -90,7 +90,7 @@ object MikasaGeneral {
         tweetText = tweetText.replaceAll("http(s*)://(.*)/", "").replaceAll("¥¥uff57", "") // 全角の「ｗ」は邪魔www
 
         // ツイート本文の解析
-        val tokens : java.util.List[Token] = CustomTwitterTokenizer.tokenize(tweetText, dictFilePath)
+        val tokens : java.util.List[Token] = CustomTwitterTokenizer2.tokenize(tweetText, dictFilePath)
         val pattern : Pattern = Pattern.compile("^[a-zA-Z]+$|^[0-9]+$") //「英数字か？」の正規表現
         for(index <- 0 to tokens.size()-1) { //各形態素に対して。。。
         val token = tokens.get(index)
@@ -174,7 +174,7 @@ object MikasaGeneral {
 
 }
 
-object CustomTwitterTokenizer {
+object CustomTwitterTokenizer2 {
 
   def tokenize(text: String, dictPath: String): java.util.List[Token]  = {
     Tokenizer.builder().mode(Tokenizer.Mode.SEARCH)
