@@ -95,11 +95,15 @@ object MikasaGeneral {
         for(index <- 0 to tokens.size()-1) { //各形態素に対して。。。
         val token = tokens.get(index)
 
-          // 英単語文字を排除したい場合はこれを使うが、英語タイトルアニメ[Fate/SHOW BAY ROCK]が引っかからなくなるのでコメントアウト
-          // val matcher : Matcher = pattern.matcher(token.getSurfaceForm())
+          // 英単語文字を排除したい場合はこれを使う
+          val matcher : Matcher = pattern.matcher(token.getSurfaceForm())
 
-          if(token.getSurfaceForm().length() >= 2) {
-            if (tokens.get(index).getPartOfSpeech == "カスタム名詞") {
+          if(token.getSurfaceForm().length() >= 2 && !matcher.find()) {
+            if (tokens.get(index).getAllFeaturesArray()(0) == "名詞" && (tokens.get(index).getAllFeaturesArray()(1) == "一般" || tokens.get(index).getAllFeaturesArray()(1) == "固有名詞")) {
+              features += tokens.get(index).getSurfaceForm
+            } else if (tokens.get(index).getPartOfSpeech == "カスタム名詞") {
+              // println(tokens.get(index).getPartOfSpeech)
+              // println(tokens.get(index).getSurfaceForm)
               features += tokens.get(index).getSurfaceForm
             }
           }
