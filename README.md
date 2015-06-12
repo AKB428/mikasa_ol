@@ -21,6 +21,7 @@ Spark StreamingでTwitterから発言数を集計しKafkaに送信する
 
 ``cp config/application.properties.sample config/application.properties``
 
+ユーザー辞書を使用しない場合は./dictionary/blank.txtを指定する
 
 ### Mikasa_RS
 
