@@ -16,7 +16,7 @@ http://tv-anime.xyz/g/mikasa_20150611.png
 
 #### Kafka TOPIC 
 * ikazuchi0
-* ikazuchi0.vew
+* ikazuchi0.view
 
 ### 設定ファイル
 
