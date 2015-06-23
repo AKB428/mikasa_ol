@@ -4,6 +4,9 @@
 
 Spark StreamingでTwitterから発言数を集計しKafkaに送信する
 
+## Mikasaシステム概要図
+
+http://tv-anime.xyz/g/mikasa_20150611.png
 
 ##事前に準備するもの
 
@@ -13,7 +16,7 @@ Spark StreamingでTwitterから発言数を集計しKafkaに送信する
 
 #### Kafka TOPIC 
 * ikazuchi0
-* ikazuchi0.vew
+* ikazuchi0.view
 
 ### 設定ファイル
 
@@ -28,10 +31,14 @@ Spark StreamingでTwitterから発言数を集計しKafkaに送信する
 Kafkaの受信側のプログラムmikasa_rsを起動
 
 
-##起動
+## 起動
 
 ``sbt``
 
 でSBTコンソールに入って
 
 ``run``
+
+
+## Mikasa System フルインストールマニュアル
+[Mikasa Install Manual](https://gist.github.com/AKB428/c30bc6a979e05fa3a022)
