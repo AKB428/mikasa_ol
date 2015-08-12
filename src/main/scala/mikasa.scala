@@ -53,6 +53,7 @@ object Mikasa {
     appProperties.load(new InputStreamReader(inStream, "UTF-8"))
 
     val dictFilePath = appProperties.getProperty("kuromoji.dict_path")
+    val takeRankNum = appProperties.getProperty("take_rank_num").toInt
 
     // TODO @AKB428 サンプルコードがなぜかシステム設定になってるのでプロセス固有に設定できるように直せたら直す
     System.setProperty("twitter4j.oauth.consumerKey", appProperties.getProperty("twitter.consumer_key"))
@@ -135,7 +136,7 @@ object Mikasa {
 
       val sendMsg = new StringBuilder()
 
-      val topList = rdd.take(10)
+      val topList = rdd.take(takeRankNum)
       // コマンドラインに出力
       println("¥ nPopular topics in last 60*60 seconds (%s words):".format(rdd.count()))
       topList.foreach { case (count, tag) =>
@@ -157,7 +158,7 @@ object Mikasa {
 
     topCountsShort.foreachRDD(rdd => {
       val sendMsg = new StringBuilder()
-      val topList = rdd.take(10)
+      val topList = rdd.take(takeRankNum)
       println("¥ nPopular topics in last short (%s words):".format(rdd.count()))
       topList.foreach { case (count, tag) =>
         println("%s (%s tweets)".format(tag, count))
