@@ -7,4 +7,7 @@
 RT,RT,RT,除外名詞
 sm,sm,sm,除外名詞
 osc,osc,osc,除外名詞
-
+OSC,OSC,OSC,除外名詞
+osc15hi,osc15hi,osc15hi,除外名詞
+広島,広島,広島,除外名詞
+ひろしま,ひろしま,ひろしま,除外名詞
