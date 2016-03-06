@@ -64,7 +64,7 @@ object MikasaGeneral {
 
     // https://spark.apache.org/docs/latest/quick-start.html
     val conf = new SparkConf().setAppName("Mikasa Online Layer")
-    conf.setMaster("local[*]")
+    //conf.setMaster("local[*]")
     //val sc = new SparkContext(conf)
 
     // Spark Streaming本体（Spark Streaming Context）の定義
