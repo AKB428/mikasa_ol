@@ -1,4 +1,5 @@
 kuromoji.dict_path=./dictionary/anime_2015_2Q.txt
+kafka.metadata.broker.list=127.0.0.1:9092
 
 take_rank_num=10
 
@@ -7,3 +8,4 @@ twitter.consumer_secret=
 twitter.access_token=
 twitter.access_token_secret=
 twitter.searchKeyword=
+

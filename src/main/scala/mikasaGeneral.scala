@@ -28,19 +28,6 @@ object MikasaGeneral {
     val TOPIC_VIEW = "ikazuchi0.view"
 
 
-    //--- Kafka Client Init Start
-    val props = new Properties();
-
-    props.put("metadata.broker.list","127.0.0.1:9092")
-    props.put("serializer.class", "kafka.serializer.StringEncoder")
-    props.put("request.required.acks", "1")
-
-    val config = new ProducerConfig(props);
-
-    val producer = new Producer[String,String](config)
-
-    //--- Kafka Client Init End
-
     var configFileName = "config/application.properties"
 
     if (args.length == 1) {
@@ -60,6 +47,21 @@ object MikasaGeneral {
     System.setProperty("twitter4j.oauth.consumerSecret", appProperties.getProperty("twitter.consumer_secret"))
     System.setProperty("twitter4j.oauth.accessToken", appProperties.getProperty("twitter.access_token"))
     System.setProperty("twitter4j.oauth.accessTokenSecret", appProperties.getProperty("twitter.access_token_secret"))
+
+    //--- Kafka Client Init Start
+    val props = new Properties()
+
+    val brokerList = appProperties.getProperty("kafka.metadata.broker.list") //"kafka.metadata.broker.list=127.0.0.1:9092"
+
+    props.put("metadata.broker.list", brokerList)
+    props.put("serializer.class", "kafka.serializer.StringEncoder")
+    props.put("request.required.acks", "1")
+
+    val config = new ProducerConfig(props);
+
+    val producer = new Producer[String,String](config)
+
+    //--- Kafka Client Init End
 
 
     // https://spark.apache.org/docs/latest/quick-start.html
