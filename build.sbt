@@ -54,4 +54,4 @@ libraryDependencies ++= Seq(
 )
 
 
-mainClass in assembly := Some("MikasaGeneral")
+mainClass in assembly := Some("MikasaGeneralFullStream")
